@@ -1,2 +1,2 @@
 # image-analyzer
-Tool which you can find the most common color out of an image file.
+A tool that lets you find the most common color from an image file.
