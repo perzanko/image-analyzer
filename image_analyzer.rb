@@ -3,45 +3,49 @@ require 'colormath'
 
 include Magick
 
-
-class ImageAnalyzer
+class ImageColorAnalyzer
   def initialize(img_name)
     @img_instance = read_image(img_name)
     puts "Image loaded: #{img_name}"
   end
 
   def read_image(name)
-    img = Magick::ImageList.new(name)
-    return img
+    Magick::Image.read(name).first
   end
 
   def common_color
-    return find_common_color
+    start_time = Time.now
+    result = find_common_color
+    end_time = Time.now
+    puts "It took #{((end_time - start_time) * 1000).to_s} ms"
+    result
   end
 
   private
 
   def find_common_color
     puts "computing..."
-    colors = get_colors_from_image(@img_instance)
+    img = @img_instance.scale 200, 200
+    colors = get_colors_arr_from_image img
     colors_hash = Hash.new 0
     colors.each {|color| colors_hash[color] += 1}
-    return convert_color_to_readable_hash colors_hash.max_by {|_, v| v}[0]
+    convert_color_to_readable_hash colors_hash.max_by {|_, v| v}[0]
   end
 
   private
 
-  def get_colors_from_image(img)
-    quantized = img.quantize(number_colors = 256)
+  def get_colors_arr_from_image(img)
+    quantized = img.quantize(number_colors = 1024)
     arr_of_colors = []
 
     (0..img.columns).each do |col|
       (0..img.rows).each do |row|
-        color = quantized.pixel_color(col, row)
-        arr_of_colors.append(color.to_hsla.join(','))
+        color = quantized.pixel_color(col, row).to_hsla.join(',')
+        arr_of_colors.append(color)
       end
     end
-    return arr_of_colors
+
+    arr_of_colors
   end
 
   private
@@ -63,6 +67,6 @@ class ImageAnalyzer
   end
 end
 
-ia = ImageAnalyzer.new("test.jpg")
+ia = ImageColorAnalyzer.new("test.jpg")
 puts ia.common_color
 
